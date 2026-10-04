@@ -17,7 +17,7 @@ codex plugin add stop-review@stop-review-local
 
 重启 Codex，在 `/hooks` 检查并信任 Stop Review 的 Stop 定义，即在插件安装范围内生效。
 
-移除：
+## 删除：
 
 ```sh
 codex plugin remove stop-review@stop-review-local
