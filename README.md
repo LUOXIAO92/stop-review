@@ -1,12 +1,14 @@
 # Stop Review
 
-Codex Main 准备结束时，通过原生 `codex exec fork --ephemeral` 审查：用户要求是否由实际执行结果和证据满足。审核提示词只追加在原生继承的对话之后。
+[English](README.md) | [简体中文](README.zh-CN.md)
 
-插件包含 Stop hook、一个 Python 标准库脚本和审核提示词。
+When Codex Main is about to finish, Stop Review uses the native `codex exec fork --ephemeral` command to check whether the actual execution results and evidence satisfy the user's requirements. The review prompt is appended after the conversation inherited by the native fork.
 
-## 安装
+The plugin consists of a Stop hook, a Python standard-library script, and a review prompt.
 
-需要 Linux/macOS、Python 3.11+、Codex 0.159.2，以及能从同一 `CODEX_HOME` 访问原生历史的本地 Main。Hook 环境的 `PATH` 必须能找到 `python3` 和 `codex`。
+## Installation
+
+Requires Linux/macOS, Python 3.11+, Codex 0.159.2, and a local Main session whose native history is accessible through the same `CODEX_HOME`. Both `python3` and `codex` must be available on the hook's `PATH`.
 
 ```sh
 git clone https://github.com/LUOXIAO92/stop-review.git
@@ -15,39 +17,39 @@ codex plugin marketplace add "$PWD"
 codex plugin add stop-review@stop-review-local
 ```
 
-重启 Codex，在 `/hooks` 检查并信任 Stop Review 的 Stop 定义，即在插件安装范围内生效。
+Restart Codex, then inspect and trust Stop Review's Stop definition in `/hooks`. The hook takes effect within the plugin's installation scope.
 
-## 删除：
+## Uninstall
 
 ```sh
 codex plugin remove stop-review@stop-review-local
 ```
 
-## 工作方式
+## How it works
 
-Hook 直接调用已安装的原生程序：
+The hook calls the installed native executable directly:
 
 ```sh
 codex exec fork --ephemeral --model="$MODEL" --skip-git-repo-check "$SESSION_ID" -
 ```
 
-`MODEL` 和 `SESSION_ID` 来自当前原生 Stop 事件；审核提示词通过 stdin 输入。原生 Codex 负责 fork、运行与退出；脚本只校验最终 JSON 并返回原生 Stop 响应。
+`MODEL` and `SESSION_ID` come from the current native Stop event, and the review prompt is passed through stdin. Native Codex handles forking, execution, and exit. The script validates the final JSON and returns a native Stop response.
 
-- `completed` / `waiting`：允许结束
-- `actionable`：将具体未完成事项交回同一个 Main；后续 Stop 仍会复审
-- `error` / 无效输出 / 原生程序失败：显示错误并停止本轮
+- `completed` / `waiting`: allow the turn to end
+- `actionable`: return specific unfinished tasks to the same Main; subsequent Stop events trigger another review
+- `error` / invalid output / native process failure: show an error and stop the turn
 
-每次审查会增加一次模型执行和等待时间。运行机制见 [实现说明](docs/implementation.md)。
+Each review adds one model execution and the time spent waiting for it. See [Implementation](docs/implementation.md) for details.
 
-## 测试
+## Tests
 
 ```sh
 python3 -m unittest discover -s tests -v
 python3 -m compileall -q plugins/stop-review/scripts tests
 ```
 
-本地单元测试使用临时 `codex` 测试替身，检查进程调用和 hook 响应。
+Local unit tests use a temporary `codex` test double to check process invocation and hook responses.
 
-## 许可
+## License
 
-[Apache-2.0](LICENSE)。插件目录带有同一份完整许可证。[来源说明](PROVENANCE.md)。
+[Apache-2.0](LICENSE). The plugin directory includes the same full license. See [Source provenance](PROVENANCE.md).
