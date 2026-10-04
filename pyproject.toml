@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "codex-stop-review"
+version = "0.1.0"
+description = "A native Codex Stop completion-review plugin"
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE", "PROVENANCE.md"]
+requires-python = ">=3.11"
+dependencies = ["websockets>=15,<17"]
+
+[project.urls]
+Repository = "https://github.com/LUOXIAO92/stop-review"
+
+[project.scripts]
+stop-review = "stop_review.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "plugins/stop-review"}
+
+[tool.setuptools.packages.find]
+where = ["plugins/stop-review"]
+include = ["stop_review*"]
+
+[tool.setuptools.package-data]
+stop_review = ["prompt.md"]

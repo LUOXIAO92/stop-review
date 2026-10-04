@@ -1,0 +1,7 @@
+{
+  "name": "stop-review",
+  "version": "0.1.0",
+  "description": "Review user requirements against execution evidence before a bound Codex Main stops.",
+  "skills": "./skills/",
+  "hooks": "./hooks/hooks.json"
+}
