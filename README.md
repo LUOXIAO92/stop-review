@@ -1,54 +1,53 @@
 # Stop Review
 
-在 Codex Main 准备结束时，fork 当前原生上下文，让 reviewer 对照用户要求、执行结果和已有证据，并通过原生 Stop hook 决定是否继续。
+Codex Main 准备结束时，通过原生 `codex exec fork --ephemeral` 审查：用户要求是否由实际执行结果和证据满足。审核提示词只追加在原生继承的对话之后。
 
-## 安装与启用
+插件只有 Stop hook、一个 Python 标准库脚本和审核提示词。没有自建 runtime、RPC 客户端、会话管理、独立 CLI、绑定步骤或 skill。
 
-需要 Linux/macOS、Python 3.11+，以及已运行共享 daemon 的 Codex。请在 Codex hook 使用的 Python 环境中安装：
+## 安装
+
+需要 Linux/macOS、Python 3.11+、Codex 0.159.2，以及能从同一 `CODEX_HOME` 访问原生历史的本地 Main。Hook 环境的 `PATH` 必须能找到 `python3` 和 `codex`。
 
 ```sh
 git clone https://github.com/LUOXIAO92/stop-review.git
 cd stop-review
-python3 -m pip install .
 codex plugin marketplace add "$PWD"
 codex plugin add stop-review@stop-review-local
 ```
 
-开始或重启 Codex，打开 `/hooks`，检查并信任 Stop Review 的 Stop 和 Interrupt 定义。然后在要启用的 Main 中调用 `stop-review` skill，或让 Main 运行：
+重启 Codex，在 `/hooks` 检查并信任 Stop Review 的 Stop 定义，即在插件安装范围内生效。无需 pip 安装或 Main 绑定。旧版升级也无需保留 Python 包或绑定记录；新版本不会读取它们。
 
-```sh
-stop-review bind
-```
-
-绑定会校验当前原生身份，只对这个 Main 生效。以后每次审查都依据继承的当前上下文。
-
-移除插件：
+移除：
 
 ```sh
 codex plugin remove stop-review@stop-review-local
 ```
 
-## 审查结论
+## 工作方式
 
-- `completed`：结果与证据满足用户要求，允许结束
-- `waiting`：需要等待外部事件、进行中的操作或必要批准，允许结束
-- `actionable`：存在当前权限内可继续的具体工作，交回同一个 Main
-- `error`：审查失败；连续失败会显示错误并结束，避免错误自循环
+Hook 直接调用已安装的原生程序：
 
-每次审查会增加一次模型执行和相应等待时间。
+```sh
+codex exec fork --ephemeral --model="$MODEL" --skip-git-repo-check "$SESSION_ID" -
+```
 
-## 测试
+`MODEL` 和 `SESSION_ID` 来自当前原生 Stop 事件；审核提示词通过 stdin 输入。原生 Codex 负责 fork、运行与退出；脚本只校验最终 JSON 并返回原生 Stop 响应。
+
+- `completed` / `waiting`：允许结束
+- `actionable`：将具体未完成事项交回同一个 Main；后续 Stop 仍会复审
+- `error` / 无效输出 / 原生程序失败：显示错误并停止本轮，不冒充审查通过
+
+每次审查会增加一次模型执行和等待时间。`--ephemeral` 使用原生父缓存路由；不额外设置输出 schema、沙箱、审批或工具开关。原生 exec 仍会重新加载本地配置，因此不能保证与 Main 的完整模型输入逐字一致或缓存必然命中。具体范围见 [实现边界](docs/implementation.md)。
+
+## 验证
 
 ```sh
 python3 -m unittest discover -s tests -v
-python3 -m compileall -q plugins/stop-review/stop_review tests
+python3 -m compileall -q plugins/stop-review/scripts tests
 ```
 
-已按 Codex 0.159.2 核对接口并通过本地测试，尚未完成真实宿主联调。
+14 项本地测试通过；已核对已安装 0.159.2 CLI 帮助和对应官方源码。测试替身验证进程调用和 hook 响应，未运行真实用户会话、模型审查或缓存命中测试。
 
 ## 许可
 
-本项目采用 [Apache License 2.0](LICENSE)。原生插件目录内保留同一份许可证，
-确保单独分发插件时也附带完整许可文本。
-
-[实现、权限与取消边界](docs/implementation.md) · [源码来源](PROVENANCE.md)
+[Apache-2.0](LICENSE)。插件目录带有同一份完整许可证。[来源说明](PROVENANCE.md)。

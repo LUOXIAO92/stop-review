@@ -1,7 +1,6 @@
 {
   "name": "stop-review",
-  "version": "0.1.0",
-  "description": "Review user requirements against execution evidence before a bound Codex Main stops.",
-  "skills": "./skills/",
+  "version": "0.2.0",
+  "description": "Review completion through a native Codex ephemeral fork before Main stops.",
   "hooks": "./hooks/hooks.json"
 }

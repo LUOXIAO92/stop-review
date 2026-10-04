@@ -5,19 +5,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"${PLUGIN_ROOT}/scripts/stop_review.py\" hook",
+            "command": "python3 \"${PLUGIN_ROOT}/scripts/stop_review.py\"",
             "timeout": 600
-          }
-        ]
-      }
-    ],
-    "Interrupt": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"${PLUGIN_ROOT}/scripts/stop_review.py\" hook",
-            "timeout": 3
           }
         ]
       }

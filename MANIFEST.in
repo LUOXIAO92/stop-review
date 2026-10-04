@@ -1,9 +1,0 @@
-# Keep the native plugin, its license, and its verification assets in source distributions.
-include .agents/plugins/marketplace.json
-include docs/*.md
-include plugins/stop-review/LICENSE
-include plugins/stop-review/.codex-plugin/plugin.json
-recursive-include plugins/stop-review/hooks *.json
-recursive-include plugins/stop-review/scripts *.py
-recursive-include plugins/stop-review/skills *.md
-include tests/peer.py
